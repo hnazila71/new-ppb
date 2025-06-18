@@ -48,19 +48,23 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     
     // Disarankan menggunakan versi BOM yang lebih stabil
-    implementation(platform("androidx.compose:compose-bom:2025.05.01")) // Perubahan di sini
+    implementation(platform("androidx.compose:compose-bom:2025.05.01")) 
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     
+    // --- PERBAIKAN ---
+    // Menggunakan nama dependensi yang benar untuk Material Icons Extended
+    implementation("androidx.compose.material:material-icons-extended:1.6.8")
+
     // Added Navigation Compose
     implementation("androidx.navigation:navigation-compose:2.7.7")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(platform("androidx.compose:compose-bom:2025.05.01")) // Perubahan di sini juga
+    androidTestImplementation(platform("androidx.compose:compose-bom:2025.05.01")) 
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
