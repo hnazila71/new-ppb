@@ -1,49 +1,64 @@
+// app/src/main/java/com/example/myapplication/data/TaskStorage.kt
+
 package com.example.myapplication.data
 
 import android.content.Context
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.stringPreferencesKey
-import androidx.datastore.preferences.preferencesDataStore
 import com.example.myapplication.model.Task
-import com.google.gson.Gson
+import com.google.gson.*
 import com.google.gson.reflect.TypeToken
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.io.File
+import java.lang.reflect.Type
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
-// This extension property creates the DataStore instance for your app
-private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "tasks")
+// Kelas adapter untuk memberi tahu Gson cara menangani tipe LocalDateTime
+class LocalDateTimeAdapter : JsonSerializer<LocalDateTime>, JsonDeserializer<LocalDateTime> {
+    private val formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME
 
-object TaskStorage {
-
-    // A key to store the list of tasks in DataStore
-    private val TASKS_KEY = stringPreferencesKey("tasks_list")
-    private val gson = Gson()
-
-    /**
-     * Saves the list of tasks to DataStore by converting it to a JSON string.
-     */
-    suspend fun saveTasks(context: Context, tasks: List<Task>) {
-        val jsonString = gson.toJson(tasks)
-        context.dataStore.edit { preferences ->
-            preferences[TASKS_KEY] = jsonString
-        }
+    override fun serialize(src: LocalDateTime?, typeOfSrc: Type?, context: JsonSerializationContext?): JsonElement {
+        return JsonPrimitive(formatter.format(src))
     }
 
-    /**
-     * Loads the list of tasks from DataStore.
-     * It returns an empty list if no tasks are saved yet.
-     */
-    suspend fun loadTasks(context: Context): List<Task> {
-        val preferences = context.dataStore.data.first()
-        val jsonString = preferences[TASKS_KEY]
-        return if (jsonString != null) {
-            // If data exists, convert it from JSON back to a list of Tasks
-            val type = object : TypeToken<List<Task>>() {}.type
-            gson.fromJson(jsonString, type)
-        } else {
-            // Otherwise, return an empty list
-            emptyList()
+    override fun deserialize(json: JsonElement?, typeOfT: Type?, context: JsonDeserializationContext?): LocalDateTime {
+        return LocalDateTime.parse(json?.asString, formatter)
+    }
+}
+
+class TaskStorage {
+    // Pindahkan semua fungsi ke dalam companion object
+    companion object {
+        // Konfigurasi Gson untuk menggunakan adapter LocalDateTime yang kita buat
+        private val gson: Gson = GsonBuilder()
+            .registerTypeAdapter(LocalDateTime::class.java, LocalDateTimeAdapter())
+            .create()
+
+        private fun getFile(context: Context) = File(context.filesDir, "tasks.json")
+
+        suspend fun saveTasks(context: Context, tasks: List<Task>) {
+            withContext(Dispatchers.IO) {
+                val json = gson.toJson(tasks)
+                getFile(context).writeText(json)
+            }
+        }
+
+        suspend fun loadTasks(context: Context): List<Task> {
+            return withContext(Dispatchers.IO) {
+                val file = getFile(context)
+                if (file.exists()) {
+                    try {
+                        val json = file.readText()
+                        val type = object : TypeToken<List<Task>>() {}.type
+                        gson.fromJson<List<Task>>(json, type) ?: emptyList()
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        emptyList() // Jika error, kembalikan list kosong
+                    }
+                } else {
+                    emptyList()
+                }
+            }
         }
     }
 }
