@@ -16,7 +16,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun LoginScreen(onLoginClick: () -> Unit, onSignUpClick: () -> Unit) {
+fun LoginScreen(onLoginClick: (String, String) -> Unit, onSignUpClick: () -> Unit) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
@@ -55,7 +55,7 @@ fun LoginScreen(onLoginClick: () -> Unit, onSignUpClick: () -> Unit) {
             }
         )
         Spacer(modifier = Modifier.height(32.dp))
-        Button(onClick = onLoginClick, modifier = Modifier.fillMaxWidth().height(50.dp)) {
+        Button(onClick = { onLoginClick(email, password) }, modifier = Modifier.fillMaxWidth().height(50.dp)) {
             Text("Login")
         }
         Row(verticalAlignment = Alignment.CenterVertically) {

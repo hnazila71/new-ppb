@@ -15,12 +15,12 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 
+// --- PERBAIKAN: Ubah parameter onSignUpClick ---
 @Composable
-fun SignUpScreen(onSignUpClick: () -> Unit, onLoginClick: () -> Unit) {
+fun SignUpScreen(onSignUpClick: (String, String) -> Unit, onLoginClick: () -> Unit) {
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    // --- TAMBAHAN ---: State untuk mengatur visibilitas password
     var passwordVisible by remember { mutableStateOf(false) }
 
     Column(modifier = Modifier.fillMaxSize().padding(32.dp), verticalArrangement = Arrangement.Center) {
@@ -43,7 +43,6 @@ fun SignUpScreen(onSignUpClick: () -> Unit, onLoginClick: () -> Unit) {
         )
         Spacer(modifier = Modifier.height(16.dp))
 
-        // --- PERBAIKAN ---: Mengubah TextField password
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
@@ -66,7 +65,11 @@ fun SignUpScreen(onSignUpClick: () -> Unit, onLoginClick: () -> Unit) {
             }
         )
         Spacer(modifier = Modifier.height(32.dp))
-        Button(onClick = onSignUpClick, modifier = Modifier.fillMaxWidth().height(50.dp)) {
+        // --- PERBAIKAN: Panggil onSignUpClick dengan email dan password ---
+        Button(
+            onClick = { onSignUpClick(email, password) },
+            modifier = Modifier.fillMaxWidth().height(50.dp)
+        ) {
             Text("Daftar")
         }
         Row(verticalAlignment = Alignment.CenterVertically) {

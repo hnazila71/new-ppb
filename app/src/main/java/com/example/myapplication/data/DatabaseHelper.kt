@@ -61,7 +61,6 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
 
     /**
      * Fungsi untuk memeriksa apakah email sudah ada di database.
-     * Akan dipanggil dari LoginScreen sebelum mengirim OTP.
      */
     fun isEmailExists(email: String): Boolean {
         val db = this.readableDatabase
@@ -76,5 +75,25 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         cursor.close()
         db.close()
         return count > 0 // Mengembalikan true jika email ditemukan
+    }
+
+    /**
+     * --- BARU ---
+     * Fungsi untuk memeriksa kecocokan email dan password di database.
+     * Akan dipanggil dari LoginScreen.
+     */
+    fun checkUser(email: String, password: String): Boolean {
+        val db = this.readableDatabase
+        val cursor = db.query(
+            TABLE_USERS,
+            arrayOf(KEY_ID),
+            "$KEY_EMAIL = ? AND $KEY_PASSWORD = ?",
+            arrayOf(email, password),
+            null, null, null
+        )
+        val count = cursor.count
+        cursor.close()
+        db.close()
+        return count > 0 // Mengembalikan true jika email dan password cocok
     }
 }
